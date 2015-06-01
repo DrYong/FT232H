@@ -1,0 +1,60 @@
+# also, see dev__Arduino/testUsingDevTtyInBash/infos.tef for serial comm & Arduino ( valable for Linux /dev/ttyXXX in general )
+
+# R: if looking for the libftdi examples, they're located at the following location:
+/usr/share/doc/libftdi-dev/examples/
+# R2: to compile & link against the ftdi lib:
+(sudo) gcc -o tef_simple.out simple.c -l ftdi
+
+# Also, Remember:
+# to use open a serial port with screen, specifying the baud rate
+screen /dev/ttyUSB0 9600
+
+# to enable CTS/RTS handshake
+screen /dev/ttyUSB0 9600,ctsrts
+
+# to close screen when finished debugging stuff
+Ctrl + A, then k or Ctrl + A, then 
+# to view the serial port status ( CTS,RTS,DTS,PE,RI,etc.. )
+Ctrl + A, then i
+# ex: prints the following for my ftdi232h breakout
+# (2,1)/(103,56)+1024 +flow UTF-8 {RTS (!CTS) DTR !DSR (!CD)} 0(ttyUSB0)
+
+
+# If needed, to add a user to the "dialout" group
+sudo usermod -a -G dialout stephaneag
+
+# to finish, if in need to display debug messages on FTDI device
+dmesg | grep FTDI
+
+# and if it's needed to desactivate the built-in drivers ( 'll auto restart on device disconnect/reconnect )
+sudo rmmod ftdi_sio
+sudo rmmod usbserial
+
+# R: to list the currently loaded kernel modules ( ex: ftdi_sio, usbserial, .. )
+sudo lsmod
+
+
+# to verify that the a tty is enabled:
+dmesg | grep tty
+# ex outpu:
+# [    0.000000] console [tty0] enabled
+#[42709.213027] usb 3-1: FTDI USB Serial Device converter now attached to ttyUSB0
+[#44247.428667] ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+#[44588.615185] usb 3-1: FTDI USB Serial Device converter now attached to ttyUSB0
+[#44629.301642] ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+#[44647.476200] usb 3-1: FTDI USB Serial Device converter now attached to ttyUSB0
+
+
+# also, symlinks to specific /dev/tty* are located at:
+ls /dev/serial/by-id/
+# ex: usb-0403_6014-if00-port0
+ls /dev/serial/by-path/
+# ex: pci-0000:00:14.0-usb-0:1:1.0-port0
+
+# so yes, we could do:
+screen /dev/serial/by-id/usb-0403_6014-if00-port0 9600
+udevadm info -q all -n /dev/ttyUSB0 --attribute-walk
+# Also, to get some more infos on the device:
+udevadm info -q all -n /dev/ttyUSB0
+# and to "crawl" infos on each of the nodes displayed in the list displayed from the above command
+udevadm info -q all -n /dev/ttyUSB0 --attribute-walk
